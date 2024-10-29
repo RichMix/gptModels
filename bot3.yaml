@@ -1,0 +1,270 @@
+openapi: 3.1.0
+info:
+  title: Advanced Forensics and Memory Analysis API
+  version: 1.1.0
+servers:
+  - url: https://api.advancedforensics.com
+
+paths:
+  /docx/extractImages:
+    post:
+      operationId: extractImagesFromDocx
+      summary: Extracts all embedded images from a .docx file by decompressing the archive.
+      description: Renames a .docx file to .zip, extracts, and retrieves all images found in the `/word/media/` directory, including hidden images.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the .docx file.
+      responses:
+        '200':
+          description: Successfully extracted images from the .docx file.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fileName:
+                          type: string
+                          description: Name of the extracted image file.
+                        imageData:
+                          type: string
+                          format: byte
+                          description: Base64 encoded data of the extracted image.
+        '400':
+          description: Invalid .docx file format or decompression error
+
+  /file/decompress:
+    post:
+      operationId: decompressFile
+      summary: Decompresses files with formats such as .xz or .zip for further analysis.
+      description: Decompresses .xz, .zip, and other compressed file formats to prepare files for further forensic examination.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of a compressed file.
+      responses:
+        '200':
+          description: Successfully decompressed file.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decompressedData:
+                    type: string
+                    format: byte
+                    description: Base64 encoded data of the decompressed file.
+        '400':
+          description: Invalid file format or decompression error
+
+  /memory/identifyOS:
+    post:
+      operationId: identifyMemoryOS
+      summary: Identifies the OS from a memory dump.
+      description: Uses `file` and `strings` commands to analyze the OS type (e.g., Windows or Linux) from a memory dump file.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the memory dump.
+      responses:
+        '200':
+          description: Successfully identified OS from memory dump.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  osInfo:
+                    type: string
+                    description: Detected operating system (e.g., Windows, Linux).
+        '400':
+          description: Invalid memory dump file format
+
+  /memory/volatilityEnvars:
+    post:
+      operationId: retrieveEnvVars
+      summary: Retrieves environmental variables from a memory dump using Volatility.
+      description: Uses Volatility’s `windows.envars.Envars` to extract environmental variables such as `COMPUTERNAME` and `USERNAME`.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the memory dump.
+      responses:
+        '200':
+          description: Retrieved environmental variables from the memory dump.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  envVars:
+                    type: object
+                    properties:
+                      computerName:
+                        type: string
+                        description: Computer name found in environmental variables.
+                      userName:
+                        type: string
+                        description: Username found in environmental variables.
+        '400':
+          description: Invalid memory dump or unsupported OS
+
+  /memory/volatilityFileScan:
+    post:
+      operationId: scanFilesInMemory
+      summary: Scans memory dump for file objects and lists file paths.
+      description: Uses Volatility’s `windows.filescan.FileScan` to identify file paths and objects present in the memory dump.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the memory dump.
+      responses:
+        '200':
+          description: Retrieved file paths and objects from the memory dump.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        filePath:
+                          type: string
+                          description: Path of the file object in memory.
+                        fileAddress:
+                          type: string
+                          description: Virtual address of the file in memory.
+        '400':
+          description: Invalid memory dump or unsupported OS
+
+  /memory/volatilityDumpFile:
+    post:
+      operationId: dumpFileFromMemory
+      summary: Extracts file data from memory dump using virtual address.
+      description: Uses Volatility’s `windows.dumpfiles.DumpFiles` to extract file data by referencing the virtual address obtained in a file scan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memoryDump:
+                  type: string
+                  format: byte
+                  description: Base64 encoded memory dump file.
+                fileAddress:
+                  type: string
+                  description: Virtual address of the file to extract from memory.
+      responses:
+        '200':
+          description: Successfully extracted file data from memory.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileName:
+                    type: string
+                    description: Name of the extracted file.
+                  fileData:
+                    type: string
+                    format: byte
+                    description: Base64 encoded data of the extracted file.
+        '404':
+          description: File not found at specified address
+
+  /memory/volatilityHashdump:
+    post:
+      operationId: retrieveHashDump
+      summary: Extracts NTLM hashes from a memory dump for password analysis.
+      description: Uses Volatility’s `windows.hashdump.Hashdump` to retrieve NTLM hashes for all users in the memory dump.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the memory dump.
+      responses:
+        '200':
+          description: Successfully extracted NTLM hashes from memory.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hashes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userName:
+                          type: string
+                          description: Username associated with the NTLM hash.
+                        ntlmHash:
+                          type: string
+                          description: NTLM hash of the user’s password.
+        '400':
+          description: Invalid memory dump or unsupported OS
+
+  /database/sqliteAccess:
+    post:
+      operationId: accessSQLiteDatabase
+      summary: Opens a SQLite database file for forensic analysis of tables and data.
+      description: Opens a SQLite database file extracted from memory or file carving to examine its tables, entries, and retrieve the name of the “cloud” user.
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Binary data of the SQLite file.
+      responses:
+        '200':
+          description: Successfully accessed SQLite database and retrieved contents.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tables:
+                    type: array
+                    items:
+                      type: string
+                    description: List of tables in the SQLite database.
+                  cloudUser:
+                    type: string
+                    description: Name of the cloud user found in database tables.
+        '400':
+          description: Invalid SQLite database format or parsing error
