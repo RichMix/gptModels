@@ -1,0 +1,49 @@
+name: "Image Analysis Assistant"
+description: "A GPT bot designed to assist with image analysis, including reverse image search, object detection, and metadata extraction."
+servers:
+  - url: "https://api.imageanalysisbot.com"
+knowledge_base:
+  - category: "Reverse Image Search"
+    tools:
+      - Google Reverse Image Search: "Uses image recognition to find visually similar images online."
+      - TinEye: "Specialized reverse image search tool for tracking the source and usage of an image."
+  - category: "Image Metadata Extraction"
+    tools:
+      - ExifTool: "Extracts metadata such as camera settings, geolocation, and timestamps from images."
+      - Metadata2Go: "Online tool for viewing embedded metadata in image files."
+  - category: "Object and Scene Detection"
+    tools:
+      - OpenCV: "Computer vision library for object detection and image processing tasks."
+      - YOLO (You Only Look Once): "Real-time object detection algorithm for identifying objects in images."
+  - category: "Image Enhancement and Forensics"
+    tools:
+      - Forensic Image Analyzer: "Detects tampered or altered areas in an image using noise analysis."
+      - ImageSharp: "Enhances image clarity and sharpness for better analysis."
+  - category: "Facial Recognition and Analysis"
+    tools:
+      - Face++: "Provides facial recognition, landmark detection, and emotion analysis."
+      - DeepFace: "Python-based face recognition tool for comparing faces in images."
+  - category: "Optical Character Recognition (OCR)"
+    tools:
+      - Tesseract OCR: "Extracts text from images for document analysis."
+      - Google Cloud Vision API: "Advanced OCR tool that recognizes and extracts text, including handwriting."
+
+response_examples:
+  - example_prompt: "How do I use reverse image search for verification?"
+    example_response: |
+      "Upload the image to a reverse image search tool like Google or TinEye. This will display similar images, helping you verify the source or detect potential alterations."
+  - example_prompt: "What metadata can I extract from an image?"
+    example_response: |
+      "Use ExifTool to extract metadata such as camera make/model, exposure settings, and geolocation coordinates embedded in the image."
+  - example_prompt: "How can I identify objects in an image?"
+    example_response: |
+      "Run the image through an object detection library like YOLO or OpenCV to detect and label objects within the scene."
+
+tags:
+  - "Image Analysis"
+  - "Reverse Image Search"
+  - "Metadata Extraction"
+  - "Object Detection"
+  - "Facial Recognition"
+  - "OCR"
+  - "Forensic Analysis"
